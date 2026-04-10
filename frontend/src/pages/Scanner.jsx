@@ -32,8 +32,9 @@ export default function Scanner() {
       const result = await scanBarcode(trimmed, getHealthProfile())
       if (!result.found) { navigate('/not-found'); return }
       navigate('/result', { state: result })
-    } catch {
-      setError('Cannot reach server. Make sure the backend is running.')
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.message || 'Cannot reach server'
+      setError(`Error: ${msg}`)
       setLoading(false)
     }
   }
@@ -43,8 +44,9 @@ export default function Scanner() {
     try {
       const result = await scanImage(base64, getHealthProfile())
       navigate('/result', { state: result })
-    } catch {
-      setError('Image scan failed. Try barcode mode.')
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.message || 'Image scan failed'
+      setError(`Error: ${msg}`)
       setLoading(false)
     }
   }
