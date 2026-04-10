@@ -129,18 +129,24 @@ export async function extractTextFromImage(base64Image, mimeType = 'image/jpeg')
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+      model: 'llama-3.2-90b-vision-preview',
       messages: [{
         role: 'user',
         content: [
           { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64Image}` } },
-          { type: 'text', text: 'Extract all visible text from this food product label or packaging. Include ingredients, nutrition facts, allergen warnings, and any other printed text. Return only the raw extracted text, nothing else.' },
+          {
+            type: 'text',
+            text: 'Extract all visible text from this food product label or packaging. Include: product name, brand, ingredients list, nutrition facts table (calories, fat, sugar, sodium, protein, fiber per 100g), allergen warnings, weight/volume, and any other printed text. Return only the raw extracted text, nothing else.',
+          },
         ],
       }],
-      max_tokens: 1024,
+      max_tokens: 1500,
     }),
   })
-  if (!res.ok) throw new Error(`Groq vision error ${res.status}`)
+  if (!res.ok) {
+    const errText = await res.text()
+    throw new Error(`Groq vision error ${res.status}: ${errText}`)
+  }
   const data = await res.json()
   return data.choices[0].message.content
 }

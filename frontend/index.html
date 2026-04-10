@@ -3,15 +3,38 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Primary -->
+    <title>NutriScan — AI Food Safety Scanner</title>
+    <meta name="description" content="Scan any food barcode. Know if it's safe for you in seconds. Free, instant AI analysis for Indian packaged foods." />
     <meta name="theme-color" content="#16A34A" />
-    <meta name="description" content="Instant AI food safety verdicts for Indian packaged foods. Free." />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
     <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- iOS PWA -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="NutriScan" />
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png" />
+
+    <!-- Icons -->
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
-    <title>NutriScan</title>
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+
+    <!-- Open Graph — controls how the link looks when shared on WhatsApp / Telegram -->
+    <meta property="og:type"        content="website" />
+    <meta property="og:title"       content="NutriScan — Is this food safe?" />
+    <meta property="og:description" content="Scan any barcode. Get an instant AI safety grade for Indian packaged foods. Free." />
+    <meta property="og:image"       content="/icon-512.png" />
+
+    <!-- Twitter card -->
+    <meta name="twitter:card"        content="summary" />
+    <meta name="twitter:title"       content="NutriScan — AI Food Safety" />
+    <meta name="twitter:description" content="Scan food barcodes. Know what you're eating." />
+    <meta name="twitter:image"       content="/icon-512.png" />
   </head>
   <body>
     <div id="root"></div>

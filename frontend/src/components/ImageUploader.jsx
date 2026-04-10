@@ -7,13 +7,25 @@ export default function ImageUploader({ onImage }) {
 
   function handleFile(file) {
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const base64 = e.target.result
+    const img = new Image()
+    const objectUrl = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl)
+      // Resize to max 1024px on longest side to keep payload small
+      const MAX = 1024
+      let { width, height } = img
+      if (width > MAX || height > MAX) {
+        if (width > height) { height = Math.round((height * MAX) / width); width = MAX }
+        else { width = Math.round((width * MAX) / height); height = MAX }
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = width; canvas.height = height
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+      const base64 = canvas.toDataURL('image/jpeg', 0.85)
       setPreview(base64)
       onImage(base64)
     }
-    reader.readAsDataURL(file)
+    img.src = objectUrl
   }
 
   return (

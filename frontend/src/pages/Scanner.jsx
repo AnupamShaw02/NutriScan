@@ -1,26 +1,35 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import BarcodeScanner from '../components/BarcodeScanner'
 import ImageUploader from '../components/ImageUploader'
+import CameraCapture from '../components/CameraCapture'
 import LoadingState from '../components/LoadingState'
 import { scanBarcode, scanImage, getHealthProfile } from '../utils/api'
 
 export default function Scanner() {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const [mode,    setMode]    = useState(location.state?.defaultMode || 'barcode')
-  const [loading, setLoading] = useState(false)
-  const [error,   setError]   = useState(null)
-  const [barcode, setBarcode] = useState('')
-  const [focused, setFocused] = useState(false)
-  const [shake,   setShake]   = useState(false)
-  const [valMsg,  setValMsg]  = useState(null)
+  const navigate   = useNavigate()
+  const location   = useLocation()
+  const fileRef    = useRef(null)
+  const [mode,     setMode]    = useState(location.state?.defaultMode || 'barcode')
+  const [photoSrc, setPhotoSrc] = useState('camera') // 'camera' | 'upload'
+  const [loading,  setLoading] = useState(false)
+  const [error,    setError]   = useState(null)
+  const [barcode,  setBarcode] = useState('')
+  const [focused,  setFocused] = useState(false)
+  const [shake,    setShake]   = useState(false)
+  const [valMsg,   setValMsg]  = useState(null)
 
   async function handleBarcode(code) {
-    if (!code?.trim()) return
+    const trimmed = code?.trim()
+    if (!trimmed) return
+    // Reject QR codes / URLs — only accept 8–14 digit EAN/UPC barcodes
+    if (!/^\d{8,14}$/.test(trimmed)) {
+      setError('QR code detected — point camera at the barcode lines (the striped rectangle), not the QR code square.')
+      return
+    }
     setLoading(true); setError(null)
     try {
-      const result = await scanBarcode(code.trim(), getHealthProfile())
+      const result = await scanBarcode(trimmed, getHealthProfile())
       if (!result.found) { navigate('/not-found'); return }
       navigate('/result', { state: result })
     } catch {
@@ -68,7 +77,7 @@ export default function Scanner() {
         </button>
         <div style={{ display: 'flex', background: '#F7F4EE', border: '1px solid #E5E1D6', borderRadius: '8px', padding: '3px', gap: '2px' }}>
           {[{ id: 'barcode', label: 'Barcode' }, { id: 'image', label: 'Photo' }].map(m => (
-            <button key={m.id} onClick={() => { setMode(m.id); setError(null); setValMsg(null) }}
+            <button key={m.id} onClick={() => { setMode(m.id); setError(null); setValMsg(null); setPhotoSrc('camera') }}
               style={{
                 padding: '5px 14px', borderRadius: '6px', border: 'none',
                 background: mode === m.id ? '#fff' : 'transparent',
@@ -142,7 +151,22 @@ export default function Scanner() {
             </form>
           </>
         ) : (
-          <ImageUploader onImage={handleImage} />
+          photoSrc === 'camera'
+            ? <CameraCapture
+                onCapture={handleImage}
+                onUploadFallback={() => { setPhotoSrc('upload') }}
+              />
+            : <div>
+                <ImageUploader onImage={handleImage} />
+                <div style={{ textAlign: 'center', marginTop: '12px' }}>
+                  <button
+                    onClick={() => setPhotoSrc('camera')}
+                    style={{ background: 'none', border: 'none', color: '#A8A29E', fontSize: '13px', cursor: 'pointer', textDecoration: 'underline' }}
+                  >
+                    Use live camera instead
+                  </button>
+                </div>
+              </div>
         )}
       </div>
     </div>

@@ -28,8 +28,12 @@ router.post('/', async (req, res) => {
   }
 
   // 2. Build a product object from extracted text
+  // Try to extract product name from first line of OCR text
+  const lines = extractedText.split('\n').map(l => l.trim()).filter(Boolean)
+  const guessedName = lines[0]?.length > 2 && lines[0]?.length < 80 ? lines[0] : 'Scanned Product'
+
   const product = {
-    name: 'Scanned Product',
+    name: guessedName,
     brand: '',
     weight: '',
     image_url: '',
@@ -37,7 +41,8 @@ router.post('/', async (req, res) => {
     nutriments: {},
     allergens: [],
     categories: '',
-    categories_tags: []
+    categories_tags: [],
+    _from_image: true,
   }
 
   // 3. Analyze with Gemini

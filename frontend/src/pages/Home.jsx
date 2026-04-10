@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getScanHistory, getHealthProfile, scanBarcode } from '../utils/api'
+import LoadingState from '../components/LoadingState'
 
 const TIPS = [
   'Anything above 600mg sodium per 100g is high for daily use.',
@@ -51,12 +52,35 @@ export default function Home() {
   const [focused,      setFocused]      = useState(false)
   const [tooltip,      setTooltip]      = useState(null)
   const [tipIndex]                      = useState(() => Math.floor(Math.random() * TIPS.length))
+  const [installEvt,   setInstallEvt]   = useState(null)   // beforeinstallprompt event
+  const [installed,    setInstalled]    = useState(false)
 
   useEffect(() => {
     setHistory(getScanHistory())
     const t = setTimeout(() => setVisible(true), 40)
-    return () => clearTimeout(t)
+
+    // Capture the install prompt so we can trigger it with our own button
+    const onPrompt = (e) => { e.preventDefault(); setInstallEvt(e) }
+    window.addEventListener('beforeinstallprompt', onPrompt)
+
+    // Hide banner once installed
+    const onInstalled = () => setInstalled(true)
+    window.addEventListener('appinstalled', onInstalled)
+
+    return () => {
+      clearTimeout(t)
+      window.removeEventListener('beforeinstallprompt', onPrompt)
+      window.removeEventListener('appinstalled', onInstalled)
+    }
   }, [])
+
+  async function handleInstall() {
+    if (!installEvt) return
+    installEvt.prompt()
+    const { outcome } = await installEvt.userChoice
+    if (outcome === 'accepted') setInstalled(true)
+    setInstallEvt(null)
+  }
 
   useEffect(() => {
     if (!tooltip) return
@@ -82,6 +106,7 @@ export default function Home() {
     setLoading(true); setError(null)
     try {
       const result = await scanBarcode(code, getHealthProfile())
+      if (!result.found) { navigate('/not-found'); return }
       navigate('/result', { state: result })
     } catch {
       setError('Cannot reach server. Is the backend running?')
@@ -94,6 +119,12 @@ export default function Home() {
     .slice(0, 5)
 
   const insight = getInsight(history, tipIndex)
+
+  if (loading) return (
+    <div style={{ minHeight: '100vh', background: '#F7F4EE' }}>
+      <LoadingState />
+    </div>
+  )
 
   return (
     <div style={{ minHeight: '100vh', background: '#F7F4EE', paddingBottom: '96px' }}>
@@ -134,6 +165,36 @@ export default function Home() {
             Scan the barcode or enter it below. Safety grade in under 5 seconds.
           </p>
         </div>
+
+        {/* ── Install banner (Android Chrome only) ── */}
+        {installEvt && !installed && (
+          <div style={{ ...show(40), marginBottom: '12px' }}>
+            <div style={{
+              background: '#fff', border: '1px solid #E5E1D6', borderRadius: '12px',
+              padding: '12px 14px', display: 'flex', alignItems: 'center', gap: '12px',
+            }}>
+              <img src="/icon-192.png" alt="NutriScan" style={{ width: '40px', height: '40px', borderRadius: '8px', flexShrink: 0 }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: '13px', fontWeight: 700, color: '#1C1917', margin: '0 0 1px 0' }}>Add to Home Screen</p>
+                <p style={{ fontSize: '12px', color: '#A8A29E', margin: 0 }}>Open instantly like any app — no Play Store needed</p>
+              </div>
+              <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                <button
+                  onClick={() => setInstallEvt(null)}
+                  style={{ background: 'none', border: 'none', color: '#A8A29E', fontSize: '18px', cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}
+                >×</button>
+                <button
+                  onClick={handleInstall}
+                  style={{
+                    background: '#16A34A', border: 'none', borderRadius: '8px',
+                    color: '#fff', fontSize: '12px', fontWeight: 700, padding: '7px 12px',
+                    cursor: 'pointer', whiteSpace: 'nowrap',
+                  }}
+                >Install</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── Primary CTA ── */}
         <div style={{ ...show(60), marginBottom: '10px' }}>
