@@ -145,9 +145,20 @@ export default function Home() {
           </div>
           <span style={{ fontSize: '16px', fontWeight: 700, color: '#1C1917', letterSpacing: '-0.02em' }}>NutriScan</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-          <span style={{ fontSize: '11px', fontWeight: 700, color: '#A8A29E', letterSpacing: '0.06em' }}>FSSAI GUIDED</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            onClick={() => navigate('/search')}
+            aria-label="Search"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" strokeWidth="1.8" strokeLinecap="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: '#A8A29E', letterSpacing: '0.06em' }}>FSSAI GUIDED</span>
+          </div>
         </div>
       </header>
 
