@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 
-const TABS = [
+const LEFT_TABS = [
   {
     id: 'home', path: '/',
     icon: (on) => (
@@ -20,6 +20,9 @@ const TABS = [
     ),
     label: 'Search',
   },
+]
+
+const RIGHT_TABS = [
   {
     id: 'profile', path: '/profile',
     icon: (on) => (
@@ -32,9 +35,27 @@ const TABS = [
   },
 ]
 
+function Tab({ tab, on, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+        gap: '2px', padding: '6px 0 8px', background: 'none', border: 'none',
+        cursor: 'pointer', transition: 'opacity 150ms',
+      }}
+    >
+      {tab.icon(on)}
+      <span style={{ fontSize: '10px', fontWeight: 700, color: on ? '#16A34A' : '#A8A29E', letterSpacing: '0.01em' }}>
+        {tab.label}
+      </span>
+    </button>
+  )
+}
+
 export default function BottomNav() {
-  const navigate  = useNavigate()
-  const { pathname } = useLocation()
+  const navigate       = useNavigate()
+  const { pathname }   = useLocation()
 
   return (
     <nav style={{
@@ -43,72 +64,57 @@ export default function BottomNav() {
       background: '#fff', borderTop: '1px solid #E5E1D6',
       paddingBottom: 'env(safe-area-inset-bottom)',
     }}>
-      {/* FAB */}
-      <div style={{ position: 'absolute', top: '-26px', left: '50%', transform: 'translateX(-50%)', zIndex: 101, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+
+      {/* Center FAB */}
+      <div style={{
+        position: 'absolute', top: '-26px', left: '50%', transform: 'translateX(-50%)',
+        zIndex: 101, display: 'flex', flexDirection: 'column', alignItems: 'center',
+      }}>
         <button
           onClick={() => navigate('/scan')}
           aria-label="Scan product"
           style={{
             width: '54px', height: '54px', borderRadius: '50%',
-            background: '#16A34A',
-            border: '3px solid #fff',
+            background: '#16A34A', border: '3px solid #fff',
             boxShadow: '0 2px 12px rgba(22,163,74,0.4)',
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transition: 'transform 180ms cubic-bezier(0.34,1.56,0.64,1), box-shadow 150ms',
+            transition: 'transform 180ms cubic-bezier(0.34,1.56,0.64,1)',
           }}
-          onMouseDown={e => { e.currentTarget.style.transform = 'scale(0.92)' }}
-          onMouseUp={e => { e.currentTarget.style.transform = 'scale(1)' }}
-          onTouchStart={e => { e.currentTarget.style.transform = 'scale(0.92)' }}
-          onTouchEnd={e => { e.currentTarget.style.transform = 'scale(1)' }}
+          onMouseDown={e  => e.currentTarget.style.transform = 'scale(0.92)'}
+          onMouseUp={e    => e.currentTarget.style.transform = 'scale(1)'}
+          onTouchStart={e => e.currentTarget.style.transform = 'scale(0.92)'}
+          onTouchEnd={e   => e.currentTarget.style.transform = 'scale(1)'}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round">
             <path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/>
             <line x1="7" y1="12" x2="17" y2="12"/>
           </svg>
         </button>
-        <span style={{ fontSize: '10px', fontWeight: 700, color: pathname === '/scan' ? '#16A34A' : '#A8A29E', marginTop: '3px', letterSpacing: '0.01em' }}>
+        <span style={{
+          fontSize: '10px', fontWeight: 700, letterSpacing: '0.01em', marginTop: '3px',
+          color: pathname === '/scan' ? '#16A34A' : '#A8A29E',
+        }}>
           Scan
         </span>
       </div>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', paddingTop: '6px', paddingBottom: '4px' }}>
-        {TABS.slice(0, 2).map(tab => {
-          const on = pathname === tab.path
-          return (
-            <button key={tab.id} onClick={() => navigate(tab.path)}
-              style={{
-                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-                gap: '2px', padding: '6px 0 8px', background: 'none', border: 'none', cursor: 'pointer',
-                transition: 'opacity 150ms',
-              }}>
-              {tab.icon(on)}
-              <span style={{ fontSize: '10px', fontWeight: 700, color: on ? '#16A34A' : '#A8A29E', letterSpacing: '0.01em' }}>
-                {tab.label}
-              </span>
-            </button>
-          )
-        })}
+      {/* Tab row: [Home][Search] · · FAB · · [Profile][···] */}
+      <div style={{ display: 'flex', alignItems: 'stretch', paddingTop: '6px', paddingBottom: '4px' }}>
+        {LEFT_TABS.map(tab => (
+          <Tab key={tab.id} tab={tab} on={pathname === tab.path} onClick={() => navigate(tab.path)} />
+        ))}
 
-        {/* Spacer for FAB */}
-        <div style={{ width: '72px', flexShrink: 0 }} />
+        {/* FAB placeholder — keeps layout symmetric */}
+        <div style={{ width: '80px', flexShrink: 0 }} />
 
-        {TABS.slice(2).map(tab => {
-          const on = pathname === tab.path
-          return (
-            <button key={tab.id} onClick={() => navigate(tab.path)}
-              style={{
-                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-                gap: '2px', padding: '6px 0 8px', background: 'none', border: 'none', cursor: 'pointer',
-              }}>
-              {tab.icon(on)}
-              <span style={{ fontSize: '10px', fontWeight: 700, color: on ? '#16A34A' : '#A8A29E', letterSpacing: '0.01em' }}>
-                {tab.label}
-              </span>
-            </button>
-          )
-        })}
+        {RIGHT_TABS.map(tab => (
+          <Tab key={tab.id} tab={tab} on={pathname === tab.path} onClick={() => navigate(tab.path)} />
+        ))}
+
+        {/* Mirror spacer so right side = left side width */}
+        <div style={{ flex: 1 }} />
       </div>
+
     </nav>
   )
 }
