@@ -1,6 +1,6 @@
-const CACHE     = 'nutriscan-v1'
-const API_CACHE = 'nutriscan-api-v1'
-const OFF_CACHE = 'nutriscan-off-v1'
+const CACHE     = 'nutriscan-v2'
+const API_CACHE = 'nutriscan-api-v2'
+const OFF_CACHE = 'nutriscan-off-v2'
 
 // App shell — cached on install
 const SHELL = [
