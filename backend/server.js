@@ -9,10 +9,23 @@ import analyzeRouter from './routes/analyze.js'
 const app = express()
 const PORT = process.env.PORT || 3001
 
-// Middleware
+// Middleware — allow any Vercel preview/prod URL + localhost
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
-  methods: ['GET', 'POST']
+  origin: (origin, cb) => {
+    // Allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin) return cb(null, true)
+    // Allow localhost dev
+    if (origin.includes('localhost') || origin.includes('127.0.0.1')) return cb(null, true)
+    // Allow any *.vercel.app domain (covers previews + production)
+    if (origin.endsWith('.vercel.app')) return cb(null, true)
+    // Allow explicit FRONTEND_URL if set
+    if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) return cb(null, true)
+    // Allow all in development
+    if (process.env.NODE_ENV !== 'production') return cb(null, true)
+    cb(new Error(`CORS: origin ${origin} not allowed`))
+  },
+  methods: ['GET', 'POST'],
+  credentials: false,
 }))
 app.use(express.json({ limit: '10mb' }))  // 10mb to allow base64 images
 
