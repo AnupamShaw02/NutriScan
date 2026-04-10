@@ -4,28 +4,27 @@ import { scanBarcode, getHealthProfile } from '../utils/api'
 import LoadingState from '../components/LoadingState'
 
 export default function Search() {
-  const navigate = useNavigate()
-  const [query, setQuery] = useState('')
-  const [results, setResults] = useState([])
+  const navigate  = useNavigate()
+  const inputRef  = useRef(null)
+  const debounce  = useRef(null)
+
+  const [query,     setQuery]     = useState('')
+  const [results,   setResults]   = useState([])
   const [searching, setSearching] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const inputRef = useRef(null)
-  const debounceRef = useRef(null)
+  const [loading,   setLoading]   = useState(false)
+  const [error,     setError]     = useState(null)
+  const [focused,   setFocused]   = useState(false)
+
+  useEffect(() => { inputRef.current?.focus() }, [])
 
   useEffect(() => {
-    inputRef.current?.focus()
-  }, [])
-
-  useEffect(() => {
-    clearTimeout(debounceRef.current)
+    clearTimeout(debounce.current)
     if (query.trim().length < 2) { setResults([]); return }
-
-    debounceRef.current = setTimeout(async () => {
+    debounce.current = setTimeout(async () => {
       setSearching(true)
       try {
         const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=15&fields=code,product_name,brands,quantity,image_front_url`
-        const res = await fetch(url)
+        const res  = await fetch(url)
         const data = await res.json()
         setResults((data.products || []).filter(p => p.code && p.product_name))
       } catch {
@@ -34,16 +33,13 @@ export default function Search() {
         setSearching(false)
       }
     }, 400)
-
-    return () => clearTimeout(debounceRef.current)
+    return () => clearTimeout(debounce.current)
   }, [query])
 
   async function handleSelect(product) {
-    setLoading(true)
-    setError(null)
+    setLoading(true); setError(null)
     try {
-      const profile = getHealthProfile()
-      const result = await scanBarcode(product.code, profile)
+      const result = await scanBarcode(product.code, getHealthProfile())
       if (!result.found) { navigate('/not-found'); return }
       navigate('/result', { state: result })
     } catch {
@@ -52,153 +48,105 @@ export default function Search() {
     }
   }
 
-  if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#F5F2EB' }}>
-        <LoadingState />
-      </div>
-    )
-  }
+  if (loading) return <div style={{ minHeight: '100vh', background: '#F7F4EE' }}><LoadingState /></div>
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F5F2EB', paddingBottom: '80px' }}>
+    <div style={{ minHeight: '100vh', background: '#F7F4EE', paddingBottom: '80px' }}>
 
-      {/* Header */}
-      <div style={{
-        padding: '14px 16px', background: '#FFFFFF',
-        borderBottom: '1px solid #E8E4D8',
-        position: 'sticky', top: 0, zIndex: 50,
-      }}>
+      {/* Search bar */}
+      <div style={{ padding: '12px 16px', background: '#fff', borderBottom: '1px solid #E5E1D6', position: 'sticky', top: 0, zIndex: 50 }}>
         <div style={{
           display: 'flex', alignItems: 'center', gap: '10px',
-          background: '#F5F2EB', border: '1.5px solid #E8E4D8', borderRadius: '12px',
-          padding: '0 14px', height: '46px',
+          background: '#F7F4EE', border: `1px solid ${focused ? '#16A34A' : '#E5E1D6'}`,
+          borderRadius: '12px', padding: '0 14px', height: '46px',
+          transition: 'border-color 150ms',
         }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9B9890" strokeWidth="2" strokeLinecap="round">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={focused ? '#16A34A' : '#A8A29E'} strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, transition: 'stroke 150ms' }}>
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
           <input
             ref={inputRef}
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Search food products…"
-            style={{
-              flex: 1, background: 'none', border: 'none', outline: 'none',
-              color: '#1A1916', fontSize: '14px', fontFamily: 'Inter, sans-serif',
-            }}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            placeholder="Search food products..."
+            style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: '#1C1917', fontSize: '14px' }}
           />
           {query && (
-            <button
-              onClick={() => setQuery('')}
-              style={{
-                background: '#E8E4D8', border: 'none', borderRadius: '50%',
-                width: '20px', height: '20px', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#6B6760', fontSize: '14px', lineHeight: 1, flexShrink: 0,
-              }}
-            >
-              ×
+            <button onClick={() => { setQuery(''); setResults([]) }}
+              style={{ background: '#E5E1D6', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B6760', fontSize: '13px', flexShrink: 0 }}>
+              x
             </button>
           )}
         </div>
       </div>
 
-      {/* Error */}
       {error && (
-        <div style={{
-          margin: '12px 16px 0',
-          background: '#FEE2E2', border: '1px solid #FECACA',
-          borderRadius: '10px', padding: '12px 14px', color: '#DC2626', fontSize: '13px',
-        }}>
+        <div style={{ margin: '12px 16px 0', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '12px 14px', color: '#DC2626', fontSize: '13px' }}>
           {error}
         </div>
       )}
 
-      {/* Status */}
       {query.length >= 2 && (
-        <p style={{ color: '#9B9890', fontSize: '12px', padding: '10px 16px 4px', margin: 0 }}>
-          {searching ? 'Searching…' : `${results.length} result${results.length !== 1 ? 's' : ''}`}
+        <p style={{ fontSize: '12px', color: '#A8A29E', padding: '10px 16px 4px', margin: 0 }}>
+          {searching ? 'Searching...' : `${results.length} result${results.length !== 1 ? 's' : ''}`}
         </p>
       )}
 
-      {/* Results */}
       {results.length > 0 && (
-        <div style={{
-          background: '#FFFFFF', border: '1px solid #E8E4D8',
-          margin: '8px 16px', borderRadius: '16px', overflow: 'hidden',
-        }}>
+        <div style={{ background: '#fff', border: '1px solid #E5E1D6', margin: '8px 16px', borderRadius: '12px', overflow: 'hidden' }}>
           {results.map((product, i) => (
-            <div
-              key={product.code}
+            <div key={product.code}
               onClick={() => handleSelect(product)}
               style={{
-                display: 'flex', alignItems: 'center', gap: '12px',
-                padding: '12px 16px', cursor: 'pointer',
-                borderBottom: i < results.length - 1 ? '1px solid #F5F2EB' : 'none',
-                transition: 'background 130ms',
+                display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
+                cursor: 'pointer', borderBottom: i < results.length - 1 ? '1px solid #F0EDE6' : 'none',
+                transition: 'background 120ms',
               }}
               onMouseEnter={e => e.currentTarget.style.background = '#FAFAF8'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <div style={{
-                width: '44px', height: '44px', borderRadius: '10px',
-                background: '#F5F2EB', flexShrink: 0, overflow: 'hidden',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
+              <div style={{ width: '44px', height: '44px', borderRadius: '8px', background: '#F7F4EE', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #E5E1D6' }}>
                 {product.image_front_url
                   ? <img src={product.image_front_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                  : <span style={{ color: '#C5C2BA', fontSize: '18px', fontWeight: 700 }}>?</span>
+                  : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D6D0C8" strokeWidth="1.5" strokeLinecap="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
                 }
               </div>
-
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{
-                  color: '#1A1916', fontSize: '14px', fontWeight: 600, margin: '0 0 2px 0',
-                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                }}>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: '#1C1917', margin: '0 0 2px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {product.product_name}
                 </p>
-                <p style={{ color: '#9B9890', fontSize: '12px', margin: 0 }}>
+                <p style={{ fontSize: '12px', color: '#A8A29E', margin: 0 }}>
                   {[product.brands, product.quantity].filter(Boolean).join(' · ')}
                 </p>
               </div>
-
-              <span style={{ color: '#C5C2BA', fontSize: '18px', flexShrink: 0 }}>›</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D6D0C8" strokeWidth="2" strokeLinecap="round">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
             </div>
           ))}
         </div>
       )}
 
-      {/* Empty state */}
       {query.length >= 2 && !searching && results.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '64px 20px' }}>
-          <p style={{ color: '#6B6760', fontSize: '14px', margin: '0 0 6px 0' }}>No products found</p>
-          <p style={{ color: '#C5C2BA', fontSize: '13px', margin: 0 }}>
-            Try a different name or scan the barcode
-          </p>
+        <div style={{ padding: '64px 24px', textAlign: 'center' }}>
+          <p style={{ fontSize: '14px', fontWeight: 700, color: '#1C1917', marginBottom: '6px' }}>No results found</p>
+          <p style={{ fontSize: '13px', color: '#A8A29E' }}>Try a different name, or scan the barcode directly.</p>
         </div>
       )}
 
-      {/* Initial hint */}
       {query.length === 0 && (
-        <div style={{ padding: '48px 20px 0', textAlign: 'center' }}>
-          <div style={{
-            width: '60px', height: '60px', borderRadius: '16px',
-            background: '#DCFCE7', margin: '0 auto 14px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '26px',
-          }}>
-            🔍
+        <div style={{ padding: '48px 24px 0', textAlign: 'center' }}>
+          <div style={{ width: '56px', height: '56px', borderRadius: '12px', background: '#fff', border: '1px solid #E5E1D6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" strokeWidth="1.8" strokeLinecap="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
           </div>
-          <p style={{ color: '#6B6760', fontSize: '14px', fontWeight: 500 }}>
-            Search by product or brand name
-          </p>
-          <p style={{ color: '#C5C2BA', fontSize: '13px', marginTop: '4px' }}>
-            e.g. "Maggi", "Amul", "KitKat"
-          </p>
+          <p style={{ fontSize: '14px', fontWeight: 700, color: '#1C1917', marginBottom: '4px' }}>Search by name or brand</p>
+          <p style={{ fontSize: '13px', color: '#A8A29E' }}>Try "Maggi", "Amul", "KitKat"</p>
         </div>
       )}
-
     </div>
   )
 }

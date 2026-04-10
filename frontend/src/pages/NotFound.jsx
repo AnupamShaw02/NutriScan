@@ -4,73 +4,65 @@ export default function NotFound() {
   const navigate = useNavigate()
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F5F2EB' }}>
+    <div style={{ minHeight: '100vh', background: '#F7F4EE' }}>
 
-      {/* Nav */}
-      <div style={{
-        display: 'flex', alignItems: 'center',
-        padding: '14px 20px', background: '#FFFFFF', borderBottom: '1px solid #E8E4D8',
+      <header style={{
+        display: 'flex', alignItems: 'center', padding: '0 16px', height: '52px',
+        background: '#fff', borderBottom: '1px solid #E5E1D6',
       }}>
-        <button
-          onClick={() => navigate('/')}
-          style={{ background: 'none', border: 'none', color: '#6B6760', cursor: 'pointer', fontSize: '14px', padding: 0 }}
-        >
-          ← Back
+        <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', color: '#6B6760', cursor: 'pointer', fontSize: '14px', padding: 0 }}>
+          Back
         </button>
-      </div>
+      </header>
 
-      <div style={{ padding: '64px 20px 0', textAlign: 'center' }}>
-        <div style={{
-          width: '72px', height: '72px', borderRadius: '20px',
-          background: '#FEF9C3', border: '1px solid #FDE68A',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          margin: '0 auto 20px', fontSize: '32px',
-        }}>
-          🔍
+      <div style={{ padding: '48px 24px 0' }}>
+
+        {/* Icon */}
+        <div style={{ width: '56px', height: '56px', borderRadius: '12px', background: '#fff', border: '1px solid #E5E1D6', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" strokeWidth="1.8" strokeLinecap="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
         </div>
 
-        <h2 style={{
-          color: '#1A1916', fontSize: '22px', fontWeight: 800,
-          letterSpacing: '-0.02em', marginBottom: '10px',
-        }}>
+        <p style={{ fontSize: '11px', fontWeight: 700, color: '#A8A29E', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '8px' }}>
+          Not in our database
+        </p>
+        <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#1C1917', letterSpacing: '-0.025em', marginBottom: '10px' }}>
           Product not found
         </h2>
-        <p style={{
-          color: '#6B6760', fontSize: '14px', lineHeight: 1.6,
-          maxWidth: '280px', margin: '0 auto 36px',
-        }}>
-          This barcode isn't in the Open Food Facts database. Common for newer or regional Indian products.
+        <p style={{ fontSize: '14px', color: '#6B6760', lineHeight: 1.6, marginBottom: '32px', maxWidth: '300px' }}>
+          This barcode isn't in Open Food Facts yet. This is common for newer or regional Indian products. Try scanning the label photo instead.
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <button
             onClick={() => navigate('/scan', { state: { defaultMode: 'image' } })}
             style={{
-              width: '100%', height: '52px',
-              background: '#16A34A', border: 'none', borderRadius: '14px',
-              color: '#FFFFFF', fontSize: '15px', fontWeight: 700, cursor: 'pointer',
-              transition: 'background 130ms',
+              width: '100%', height: '52px', border: 'none', borderRadius: '12px',
+              background: '#16A34A', color: '#fff', fontSize: '15px', fontWeight: 700, cursor: 'pointer',
+              transition: 'background 120ms, transform 100ms',
             }}
             onMouseEnter={e => e.currentTarget.style.background = '#15803D'}
             onMouseLeave={e => e.currentTarget.style.background = '#16A34A'}
+            onMouseDown={e => e.currentTarget.style.transform = 'scale(0.98)'}
+            onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
           >
-            Scan the Package Label
+            Scan the label instead
           </button>
-
           <button
             onClick={() => navigate('/')}
             style={{
-              width: '100%', height: '52px',
-              background: '#FFFFFF', border: '1.5px solid #E8E4D8', borderRadius: '14px',
-              color: '#1A1916', fontSize: '15px', fontWeight: 600, cursor: 'pointer',
+              width: '100%', height: '52px', border: '1px solid #E5E1D6', borderRadius: '12px',
+              background: '#fff', color: '#1C1917', fontSize: '15px', fontWeight: 700, cursor: 'pointer',
               transition: 'border-color 150ms',
             }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = '#D5D0C3'}
-            onMouseLeave={e => e.currentTarget.style.borderColor = '#E8E4D8'}
+            onMouseEnter={e => e.currentTarget.style.borderColor = '#CFC9BC'}
+            onMouseLeave={e => e.currentTarget.style.borderColor = '#E5E1D6'}
           >
             Back to Home
           </button>
         </div>
+
       </div>
     </div>
   )
