@@ -58,6 +58,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' })
 })
 
-app.listen(PORT, () => {
-  console.log(`NutriScan backend running on http://localhost:${PORT}`)
-})
+// Only bind a port when running directly (not on Vercel serverless)
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    console.log(`NutriScan backend running on http://localhost:${PORT}`)
+  })
+}
+
+export default app
