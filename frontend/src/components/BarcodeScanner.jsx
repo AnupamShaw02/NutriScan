@@ -3,7 +3,7 @@ import { Html5QrcodeScanner } from 'html5-qrcode'
 
 export default function BarcodeScanner({ onScan }) {
   const scannerRef = useRef(null)
-  const onScanRef = useRef(onScan)
+  const onScanRef  = useRef(onScan)
   onScanRef.current = onScan
 
   useEffect(() => {
@@ -13,27 +13,26 @@ export default function BarcodeScanner({ onScan }) {
       'qr-reader',
       {
         fps: 15,
-        qrbox: { width: 280, height: 180 },  // wider box — barcodes are rectangular
+        qrbox: { width: 280, height: 180 },
         rememberLastUsedCamera: true,
         aspectRatio: 1.0,
-        showTorchButtonIfSupported: true,     // flashlight button on phone
-        useBarCodeDetectorIfSupported: true,  // use native browser API if available (faster)
+        showTorchButtonIfSupported: true,
+        useBarCodeDetectorIfSupported: true,
       },
       false
     )
 
     scanner.render(
-      (decodedText) => {
+      (text) => {
         if (navigator.vibrate) navigator.vibrate(50)
         scanner.clear().catch(() => {})
         scannerRef.current = null
-        onScanRef.current(decodedText)
+        onScanRef.current(text)
       },
       () => {}
     )
 
     scannerRef.current = scanner
-
     return () => {
       if (scannerRef.current) {
         scannerRef.current.clear().catch(() => {})
@@ -45,7 +44,6 @@ export default function BarcodeScanner({ onScan }) {
   return (
     <div style={{ position: 'relative', width: '100%' }}>
       <div id="qr-reader" style={{ width: '100%' }} />
-
       <style>{`
         #qr-reader { border: none !important; }
         #qr-reader video { border-radius: 12px; }
@@ -53,13 +51,13 @@ export default function BarcodeScanner({ onScan }) {
         #qr-reader__dashboard {
           background: #FFFFFF !important;
           border-radius: 0 0 12px 12px;
-          padding: 10px !important;
-          border-top: 1px solid #E8E4D8 !important;
+          padding: 12px 16px !important;
+          border-top: 1px solid #E5E1D6 !important;
         }
         #qr-reader__dashboard_section_csr button {
           background: #16A34A !important;
           border: none !important;
-          border-radius: 10px !important;
+          border-radius: 8px !important;
           color: #FFFFFF !important;
           padding: 8px 18px !important;
           font-family: Inter, sans-serif !important;
@@ -68,25 +66,33 @@ export default function BarcodeScanner({ onScan }) {
           cursor: pointer !important;
         }
         #qr-reader__camera_selection {
-          background: #F5F2EB !important;
-          border: 1.5px solid #E8E4D8 !important;
-          color: #1A1916 !important;
+          background: #F7F4EE !important;
+          border: 1px solid #E5E1D6 !important;
+          color: #1C1917 !important;
           border-radius: 8px !important;
-          padding: 4px 8px !important;
+          padding: 6px 10px !important;
           width: 100% !important;
           margin-bottom: 8px !important;
           font-family: Inter, sans-serif !important;
+          font-size: 13px !important;
         }
-        #qr-reader__status_span { color: #9B9890 !important; font-size: 12px !important; }
+        #qr-reader__status_span {
+          color: #A8A29E !important;
+          font-size: 12px !important;
+          font-family: Inter, sans-serif !important;
+        }
         #qr-reader__torch_button {
-          background: #F5F2EB !important;
-          border: 1.5px solid #E8E4D8 !important;
+          background: #F7F4EE !important;
+          border: 1px solid #E5E1D6 !important;
           border-radius: 8px !important;
-          color: #1A1916 !important;
+          color: #1C1917 !important;
           padding: 6px 12px !important;
           margin-left: 8px !important;
           font-family: Inter, sans-serif !important;
+          font-size: 13px !important;
         }
+        #qr-reader img[alt="Info icon"] { display: none !important; }
+        #qr-reader__header_message { display: none !important; }
       `}</style>
     </div>
   )

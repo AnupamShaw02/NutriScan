@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 
 export default function ImageUploader({ onImage }) {
   const [preview, setPreview] = useState(null)
+  const [dragging, setDragging] = useState(false)
   const inputRef = useRef(null)
 
   function handleFile(file) {
@@ -15,64 +16,63 @@ export default function ImageUploader({ onImage }) {
     reader.readAsDataURL(file)
   }
 
-  function handleChange(e) { handleFile(e.target.files[0]) }
-  function handleDrop(e) { e.preventDefault(); handleFile(e.dataTransfer.files[0]) }
-
   return (
-    <div style={{ padding: '0 20px' }}>
+    <div style={{ padding: '0 16px' }}>
       {preview ? (
-        <div style={{ textAlign: 'center' }}>
+        <div>
           <img
             src={preview}
             alt="Selected"
-            style={{
-              width: '100%', maxHeight: '300px', objectFit: 'contain',
-              borderRadius: '16px', border: '1px solid #E8E4D8',
-            }}
+            style={{ width: '100%', maxHeight: '300px', objectFit: 'contain', borderRadius: '12px', border: '1px solid #E5E1D6', display: 'block', marginBottom: '12px' }}
           />
           <button
             onClick={() => { setPreview(null); inputRef.current.value = '' }}
             style={{
-              marginTop: '12px', background: '#FFFFFF',
-              border: '1.5px solid #E8E4D8', color: '#6B6760',
-              borderRadius: '10px', padding: '8px 20px', cursor: 'pointer',
-              fontSize: '13px', fontWeight: 500, transition: 'border-color 150ms',
+              width: '100%', height: '44px', background: '#fff',
+              border: '1px solid #E5E1D6', borderRadius: '12px',
+              color: '#6B6760', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+              transition: 'border-color 150ms',
             }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = '#D5D0C3'}
-            onMouseLeave={e => e.currentTarget.style.borderColor = '#E8E4D8'}
+            onMouseEnter={e => e.currentTarget.style.borderColor = '#CFC9BC'}
+            onMouseLeave={e => e.currentTarget.style.borderColor = '#E5E1D6'}
           >
             Choose a different image
           </button>
         </div>
       ) : (
         <div
-          onDrop={handleDrop}
-          onDragOver={e => e.preventDefault()}
+          onDrop={e => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]) }}
+          onDragOver={e => { e.preventDefault(); setDragging(true) }}
+          onDragLeave={() => setDragging(false)}
           onClick={() => inputRef.current.click()}
           style={{
-            border: '2px dashed #D5D0C3', borderRadius: '18px',
-            padding: '52px 20px', textAlign: 'center',
-            cursor: 'pointer', transition: 'border-color 150ms, background 150ms',
-            background: '#FFFFFF',
+            border: `1.5px dashed ${dragging ? '#16A34A' : '#CFC9BC'}`,
+            borderRadius: '12px', padding: '48px 24px',
+            textAlign: 'center', cursor: 'pointer',
+            background: dragging ? '#F0FDF4' : '#fff',
+            transition: 'all 150ms',
           }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = '#16A34A'; e.currentTarget.style.background = '#F0FDF4' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = '#D5D0C3'; e.currentTarget.style.background = '#FFFFFF' }}
         >
-          <div style={{
-            width: '52px', height: '52px', borderRadius: '14px',
-            background: '#DCFCE7', border: '1px solid #BBF7D0',
-            margin: '0 auto 14px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '22px',
-          }}>
-            📷
+          {/* Camera icon */}
+          <div style={{ width: '52px', height: '52px', borderRadius: '12px', background: '#F7F4EE', border: '1px solid #E5E1D6', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
           </div>
-          <p style={{ color: '#1A1916', fontSize: '15px', fontWeight: 600, margin: '0 0 6px 0' }}>
+
+          <p style={{ fontSize: '15px', fontWeight: 700, color: '#1C1917', margin: '0 0 6px 0' }}>
             Take a photo or upload
           </p>
-          <p style={{ color: '#9B9890', fontSize: '13px', margin: 0 }}>
-            Point at the front of the product packaging
+          <p style={{ fontSize: '13px', color: '#A8A29E', margin: '0 0 16px 0', lineHeight: 1.5 }}>
+            Point at the front of the packaging. Our AI reads the label.
           </p>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#F7F4EE', border: '1px solid #E5E1D6', borderRadius: '8px', padding: '6px 14px' }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" strokeWidth="2" strokeLinecap="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span style={{ fontSize: '13px', fontWeight: 700, color: '#6B6760' }}>Choose file</span>
+          </div>
         </div>
       )}
 
@@ -81,7 +81,7 @@ export default function ImageUploader({ onImage }) {
         type="file"
         accept="image/*"
         capture="environment"
-        onChange={handleChange}
+        onChange={e => handleFile(e.target.files[0])}
         style={{ display: 'none' }}
       />
     </div>
