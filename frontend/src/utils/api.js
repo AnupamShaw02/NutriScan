@@ -2,7 +2,6 @@ import axios from 'axios'
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL || ''
 
-// Get or create a session ID (stored in localStorage)
 function getSessionId() {
   let id = localStorage.getItem('nutriscan_session')
   if (!id) {
@@ -14,14 +13,18 @@ function getSessionId() {
 
 const api = axios.create({
   baseURL: BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json' },
+  timeout: 30000, // 30 second timeout
 })
 
-// Attach session ID to every request
 api.interceptors.request.use((config) => {
   config.headers['x-session-id'] = getSessionId()
+  return config
+})
+
+// Log the backend URL on every request so we can verify it in console
+api.interceptors.request.use((config) => {
+  console.log('[NutriScan] API call →', config.baseURL + config.url)
   return config
 })
 
