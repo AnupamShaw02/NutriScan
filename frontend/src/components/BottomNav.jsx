@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 
+// Home on the left, Search + Profile on the right
 const LEFT_TABS = [
   {
     id: 'home', path: '/',
@@ -11,6 +12,9 @@ const LEFT_TABS = [
     ),
     label: 'Home',
   },
+]
+
+const RIGHT_TABS = [
   {
     id: 'search', path: '/search',
     icon: (on) => (
@@ -20,9 +24,6 @@ const LEFT_TABS = [
     ),
     label: 'Search',
   },
-]
-
-const RIGHT_TABS = [
   {
     id: 'profile', path: '/profile',
     icon: (on) => (
@@ -110,9 +111,6 @@ export default function BottomNav() {
         {RIGHT_TABS.map(tab => (
           <Tab key={tab.id} tab={tab} on={pathname === tab.path} onClick={() => navigate(tab.path)} />
         ))}
-
-        {/* Mirror spacer so right side = left side width */}
-        <div style={{ flex: 1 }} />
       </div>
 
     </nav>
